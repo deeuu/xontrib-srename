@@ -1,6 +1,7 @@
 def _init():
 
     from argparse import ArgumentParser
+    from shutil import copyfile
     import os
     import re
 
@@ -28,6 +29,11 @@ def _init():
             '--invert',
             action='store_true',
             help="Reverse the order or PATTERN and REPLACEMENT"
+        )
+        parser.add_argument(
+            '--copy',
+            action='store_true',
+            help="Copy files, rather than move existing"
         )
         parser.add_argument(
             '--dest',
@@ -75,6 +81,8 @@ def _init():
 
             if args.dry_run:
                 print(f'Info: {old_name} → {new_name} (not renaming as dry run)')
+            elif args.copy:
+                copyfile(old_name, new_name)
             else:
                 os.rename(old_name, new_name)
 
