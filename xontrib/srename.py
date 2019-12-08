@@ -8,34 +8,44 @@ def _init():
         parser = ArgumentParser(prog='srename')
         parser.add_argument(
             'pattern',
-            help="Pattern to evaluate on a file name"
+            help="Pattern to evaluate on a file name",
         )
         parser.add_argument(
             'replacement',
-            help="String or function to replace matched content defined by PATTERN"
+            help="String or function to replace matched content defined by PATTERN",
         )
         parser.add_argument(
             'files',
             nargs='+',
-            help="Files to rename"
+            help="Files to rename",
         )
         parser.add_argument(
             '--dry-run',
             action='store_true',
-            help="Do not rename files")
+            help="Do not rename files"
+        )
         parser.add_argument(
             '--invert',
             action='store_true',
             help="Reverse the order or PATTERN and REPLACEMENT"
         )
+        parser.add_argument(
+            '--dest',
+            type=str,
+            help="Path to move/copy the renamed files to"
+        )
+
         args = parser.parse_args(args)
         return args
 
     def _srename(args):
 
         args = _parse_srename_args(args)
-        pattern, replacement = args.pattern, args.replacement
 
+        if args.dest and not os.path.isdir(args.dest):
+            raise IOError(f'{args.dest} is not a directory')
+
+        pattern, replacement = args.pattern, args.replacement
         if args.invert:
             pattern, replacement = replacement, pattern
 
@@ -52,6 +62,9 @@ def _init():
                 os.path.dirname(old_name),
                 re.sub(pattern, replacement, os.path.basename(old_name))
             )
+
+            if args.dest:
+                new_name = os.path.join(args.dest, os.path.basename(new_name))
 
             if (old_name == new_name):
                 continue
