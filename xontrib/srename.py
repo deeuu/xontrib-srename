@@ -1,6 +1,7 @@
 def _init():
 
     from argparse import ArgumentParser
+    import pathlib
     from shutil import copyfile
     import os
     import re
@@ -16,9 +17,9 @@ def _init():
             help="String or function to replace matched content defined by PATTERN",
         )
         parser.add_argument(
-            'files',
+            'paths',
             nargs='+',
-            help="Files to rename",
+            help="Path(s) to rename",
         )
         parser.add_argument(
             '--dry-run',
@@ -48,27 +49,27 @@ def _init():
 
         pattern, replacement = args.pattern, args.replacement
 
-        for old_name in args.files:
-            if not os.path.exists(old_name):
+        paths = sorted(
+            set([pathlib.Path(_).absolute().resolve() for _ in args.paths]),
+            reverse=True
+        )
+
+        for old_name in paths:
+            if not old_name.exists():
                 print(f'Warning: {old_name} does not exist')
                 continue
 
-            if not os.path.isfile(old_name):
-                print(f'Warning: {old_name} is not a file')
-                continue
-
-            new_name = os.path.join(
-                os.path.dirname(old_name),
-                re.sub(pattern, replacement, os.path.basename(old_name))
-            )
+            new_name = old_name.parent / re.sub(pattern,
+                                                replacement,
+                                                old_name.name)
 
             if args.dest:
-                new_name = os.path.join(args.dest, os.path.basename(new_name))
+                new_name = pathlib.Path(args.dest) / new_name.name
 
             if (old_name == new_name):
                 continue
 
-            if os.path.exists(new_name):
+            if new_name.exists():
                 print(f'Warning: {new_name} already exists')
                 continue
 
@@ -77,7 +78,7 @@ def _init():
             elif args.copy:
                 copyfile(old_name, new_name)
             else:
-                os.rename(old_name, new_name)
+                old_name.rename(new_name)
 
     return _srename
 
