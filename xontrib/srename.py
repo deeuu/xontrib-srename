@@ -26,11 +26,6 @@ def _init():
             help="Do not rename files"
         )
         parser.add_argument(
-            '--invert',
-            action='store_true',
-            help="Reverse the order or PATTERN and REPLACEMENT"
-        )
-        parser.add_argument(
             '--copy',
             action='store_true',
             help="Copy files, rather than move existing"
@@ -52,8 +47,6 @@ def _init():
             raise IOError(f'{args.dest} is not a directory')
 
         pattern, replacement = args.pattern, args.replacement
-        if args.invert:
-            pattern, replacement = replacement, pattern
 
         for old_name in args.files:
             if not os.path.exists(old_name):
