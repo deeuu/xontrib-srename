@@ -36,6 +36,11 @@ def _init():
             type=str,
             help="Path to move/copy the renamed files to"
         )
+        parser.add_argument(
+            '--include-dirs',
+            action='store_true',
+            help="Rename directories as well as files"
+        )
 
         args = parser.parse_args(args)
         return args
@@ -49,12 +54,11 @@ def _init():
 
         pattern, replacement = args.pattern, args.replacement
 
-        paths = sorted(
-            set([pathlib.Path(_).absolute().resolve() for _ in args.paths]),
-            reverse=True
-        )
+        paths = set([pathlib.Path(_).absolute().resolve() for _ in args.paths])
+        if not args.include_dirs:
+            paths = filter(lambda p: p.is_file(), paths)
 
-        for old_name in paths:
+        for old_name in sorted(paths, reverse=True):
             if not old_name.exists():
                 print(f'Warning: {old_name} does not exist')
                 continue
